@@ -3,21 +3,19 @@ import pandas as pd
 from sqlalchemy import create_engine, text
 from typing import List, Tuple
 
-"""
-@TDOO 需要修改解密的逻辑，这样操作将无法正确初始化数据库
-"""
-# load info.
-DB_HOST = os.getenv('DB_HOST')
-DB_PORT = os.getenv('DB_PORT')
-DB_NAME = os.getenv('DB_NAME')
-DB_USER = os.getenv('DB_USER')
-DB_PASSWORD = os.getenv('DB_PASSWORD')
+from init_env import decrypt_with_ansible_lib
+
+encrypted_file = os.getenv("DECRYPT_FILE_PATH")
+encrypted_password = os.getenv("DECRYPT_PASSWORD")
+output_file = os.getenv("OUTPUT_FILE")
+decrypt_with_ansible_lib(encrypted_file, encrypted_password, output_file)
 
 def create_connection():
     """
     使用SQLAlchemy创建数据库连接
     """
-    db_url = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    db_url = f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
+    print(f'\n\n{db_url}\n\n')
     engine = create_engine(db_url)
     return engine
 
@@ -27,7 +25,8 @@ def get_data_from_db(query: str) -> pd.DataFrame:
     """
     engine = create_connection()
     # 使用SQLAlchemy的引擎创建连接，并通过pandas读取SQL查询结果
-    data = pd.read_sql(query, engine)
+    with engine.connect() as conn:
+        data = pd.read_sql(text(query), conn)
     return data
 
 def store_prediction_results(results: List[Tuple[str, int]], table_name: str) -> None:
@@ -97,3 +96,4 @@ if __name__ == '__main__':
     
     # Load csv to database
     load_csv_to_db('./data/JEOPARDY_CSV.csv', 'jeopardy')
+    print('Load the csv data to the database...')

@@ -6,21 +6,16 @@ import numpy as np
 from fastapi import FastAPI
 from pydantic import BaseModel
 from gensim.models import Word2Vec
-from dotenv import load_dotenv
 
 sys.path.insert(1, os.path.join(os.getcwd(), "src"))
 
 from db import store_prediction_results
+from init_env import decrypt_with_ansible_lib
 
-# 加载 .env 文件中的数据库连接信息
-load_dotenv()
-
-# 获取数据库连接信息（从环境变量中读取）
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-DB_NAME = os.getenv("DB_NAME")
+encrypted_file = os.getenv("DECRYPT_FILE_PATH")
+encrypted_password = os.getenv("DECRYPT_PASSWORD")
+output_file = os.getenv("OUTPUT_FILE")
+decrypt_with_ansible_lib(encrypted_file, encrypted_password, output_file)
 
 # 创建 FastAPI 应用
 app = FastAPI()

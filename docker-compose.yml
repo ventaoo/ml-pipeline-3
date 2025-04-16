@@ -1,42 +1,41 @@
 services:
-     decryptor:
-          build: 
-               context: .
-               dockerfile: ./Dockerfile.decryptor
-          image: zwttt/decryptor:latest
-          command: bash -c "chmod +x ./decrypt_secrets.sh && ./decrypt_secrets.sh"
-          environment:
-               - VAULT_PASSWORD=${VAULT_PASSWORD}
-          volumes:
-               - shared-data:/shared
-
      server:
           build: .
-          command: bash -c "chmod +x ./secrets/init_env.sh && ./secrets/init_env.sh && python src/db.py && python src/preprocess.py && python src/train.py && pytest src/tests/ --cov=src --cov-report=html"
+          command: |
+               bash -c " 
+                    python src/db.py &&
+                    python src/preprocess.py &&
+                    python src/train.py && 
+                    
+                    uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload & 
+                    
+                    echo '等待API服务启动...' &&
+                    while ! nc -z localhost 8000; do 
+                         sleep 1 
+                    done && 
+                    
+                    echo '开始执行测试...' &&
+                    pytest src/tests/ --cov=src --cov-report=html && 
+                    echo '测试完成...'
+                    
+                    tail -f /dev/null
+                    "
           ports:
                - 8000:8000
           image: zwttt/ml-pipeline-3:latest
           environment:
-               DB_HOST: ${DB_HOST}
-               DB_PORT: ${DB_PORT}
-               DB_NAME: ${DB_NAME}
-               DB_USER: ${DB_USER}
-               DB_PASSWORD: ${DB_PASSWORD}
+               DECRYPT_FILE_PATH: ./secrets/db
+               DECRYPT_PASSWORD: ZwtzWtzwT
+               OUTPUT_FILE: ./env
+               BASE_API_URL: http://localhost:8000
           depends_on:
-               decryptor:
-                    condition: service_completed_successfully
                postgres:
                     condition: service_healthy
-          volumes:
-               - shared-data:/shared  # 共享 volume，能访问解密后的文件
-     
+
      postgres:
           image: postgres:latest
-          command: bash -c "chmod +x ./secrets/init_env.sh && ./secrets/init_env.sh"
           ports:
                - 5432:5432
-          depends_on:
-               - decryptor
           environment:
                POSTGRES_DB: ${DB_NAME}
                POSTGRES_USER: ${DB_USER}
@@ -46,7 +45,3 @@ services:
                interval: 5s
                timeout: 5s
                retries: 5
-          volumes:
-               - shared-data:/shared  # 共享 volume，能访问解密后的文件
-volumes:
-  shared-data:  # 定义共享的 volume

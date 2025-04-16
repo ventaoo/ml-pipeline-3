@@ -1,8 +1,8 @@
-2025-03-11 15:14:52,531 — train — INFO — X converted -> vec
-2025-03-11 15:14:58,364 — train — INFO — /Users/zwt/Desktop/github_project/ml-pipeline-2/experiments/logistic_regression.sav is saved
-t/Desktop/github_project/ml-pipeline-2/data/Train_JEOPARDY_csv_X.csv is saved
-2025-03-11 15:14:58,301 — preprocess — INFO — /Users/zwt/Desktop/github_project/ml-pipeline-2/data/Train_JEOPARDY_csv_y.csv is saved
-2025-03-11 15:14:58,301 — preprocess — INFO — /Users/zwt/Desktop/github_project/ml-pipeline-2/data/Test_JEOPARDY_csv_X.csv is saved
-2025-03-11 15:14:58,302 — preprocess — INFO — /Users/zwt/Desktop/github_project/ml-pipeline-2/data/Test_JEOPARDY_csv_y.csv is saved
-2025-03-11 15:14:58,302 — preprocess — INFO — Train and test data is ready
-2025-03-11 15:14:58,304 — preprocess — INFO — /Users/zwt/Desktop/github_project/ml_pipeline/data/Test_JEOPARDY_csv_X.csv is saved
+2025-03-27 12:29:13,172 — train — INFO — X converted -> vec
+2025-03-27 12:29:15,921 — train — INFO — /Users/zwt/Desktop/github_project/ml-pipeline-3/experiments/logistic_regression.sav is saved
+t/Desktop/github_project/ml-pipeline-3/data/Train_JEOPARDY_csv_X.csv is saved
+2025-03-27 12:29:15,847 — preprocess — INFO — /Users/zwt/Desktop/github_project/ml-pipeline-3/data/Train_JEOPARDY_csv_y.csv is saved
+2025-03-27 12:29:15,848 — preprocess — INFO — /Users/zwt/Desktop/github_project/ml-pipeline-3/data/Test_JEOPARDY_csv_X.csv is saved
+2025-03-27 12:29:15,848 — preprocess — INFO — /Users/zwt/Desktop/github_project/ml-pipeline-3/data/Test_JEOPARDY_csv_y.csv is saved
+2025-03-27 12:29:15,848 — preprocess — INFO — Train and test data is ready
+2025-03-27 12:29:15,850 — preprocess — INFO — /Users/zwt/Desktop/github_project/ml_pipeline/data/Test_JEOPARDY_csv_X.csv is saved
