@@ -25,7 +25,7 @@ services:
           image: zwttt/ml-pipeline-3:latest
           environment:
                DECRYPT_FILE_PATH: ./secrets/db
-               DECRYPT_PASSWORD: ZwtzWtzwT
+               DECRYPT_PASSWORD: ${DECRYPT_PASSWORD}
                OUTPUT_FILE: ./env
                BASE_API_URL: http://localhost:8000
           depends_on:
