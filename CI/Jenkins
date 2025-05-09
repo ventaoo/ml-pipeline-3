@@ -2,8 +2,13 @@ pipeline {
     agent any
     
     environment {
-        VAULT_PASSWORD = credentials('ansible-vault-password')
         DOCKERHUB_CREDS=credentials('ba7bf351-123e-409d-8d95-1c72fb78ffe4')  // 引用 Jenkins 凭据
+
+        POSTGRES_DB=credentials('db-name')
+        POSTGRES_USER=credentials('db-user')
+        POSTGRES_PASSWORD=credentials('db-password')
+        
+        IMAGE_TAG = 'zwttt/ml-pipeline-3:latest'
 
         LC_ALL = "en_US.UTF-8"
         LANG    = "en_US.UTF-8"
@@ -34,14 +39,17 @@ pipeline {
             steps {
                 script {
                     dir('ml-pipeline-3') {
-                        try {
-                                sh """
-                                docker-compose build
-                                """
-                        } finally {
-                                sh """
-                                docker-compose up -d
-                                """
+                        // 尝试构建镜像，无论成功与否都启动容器
+                        withCredentials([
+                            string(credentialsId: 'db-name', variable: 'DB_NAME'),
+                            string(credentialsId: 'db-user', variable: 'DB_USER'),
+                            string(credentialsId: 'db-password', variable: 'DB_PASSWORD')
+                        ]) {
+                            try {
+                                sh 'docker-compose build'
+                            } finally {
+                                sh 'docker-compose up -d'
+                            }
                         }
                     }
                 }
@@ -53,16 +61,20 @@ pipeline {
             steps {
                 dir('ml-pipeline-3') {
                     script {
-                        def containerId = sh(
+                        // 获取所有匹配的容器ID（可能多行）
+                        def containerIds = sh(
                             script: 'docker ps -qf "name=^ml-pipeline-3"',
                             returnStdout: true
                         ).trim()
 
-                        if (containerId.isEmpty()) {
+                        if (containerIds.isEmpty()) {
                             echo "No container running"
                         } else {
-                            // 输出容器最后 1000 行日志（非持续跟踪）
-                            sh "docker logs --tail 1000 ${containerId}"
+                            // 按行分割容器ID，逐个处理
+                            containerIds.split('\n').each { id ->
+                                echo "Fetching logs for container: ${id}"
+                                sh "docker logs --tail 1000 ${id}"
+                            }
                         }
                     }
                 }
@@ -72,9 +84,9 @@ pipeline {
         // 阶段 3：检查测试覆盖率报告
         stage('Checkout coverage report') {
             steps {
-                dir('ml_pipeline') {
+                dir('ml-pipeline-3') {
                     // 显示容器日志的最后 10 行（含时间戳）
-                    sh 'docker-compose logs -t --tail 10'
+                    sh 'docker-compose logs -t --tail 100'
                 }
             }
         }
@@ -82,15 +94,20 @@ pipeline {
         // 阶段 4：推送镜像到 DockerHub
         stage('Push') {
             steps {
-                sh 'docker push zwttt/ml-pipeline-3:latest'
+                sh 'docker push zwttt/ml-pipeline-3'
             }
         }
     }
     
     post {
+        success {
+            // 触发 CD 流水线，传递 env.IMAGE_TAG 参数
+            build job: 'ml-cd-pipeline-3', 
+                  parameters: [string(name: 'IMAGE_TAG', value: env.IMAGE_TAG)], // ✅ 正确：通过 env 访问
+                  wait: false
+        }
         always {
             sh 'docker logout'
         }
-    }
-    
+    }   
 }

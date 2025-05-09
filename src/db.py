@@ -15,7 +15,6 @@ def create_connection():
     使用SQLAlchemy创建数据库连接
     """
     db_url = f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
-    print(f'\n\n{db_url}\n\n')
     engine = create_engine(db_url)
     return engine
 
