@@ -7,6 +7,7 @@ pipeline {
         POSTGRES_DB=credentials('db-name')
         POSTGRES_USER=credentials('db-user')
         POSTGRES_PASSWORD=credentials('db-password')
+        DECRYPT_PASSWORD=credentials('ansible-vault-password')
         
         IMAGE_TAG = 'zwttt/ml-pipeline-3:latest'
 
@@ -41,9 +42,11 @@ pipeline {
                     dir('ml-pipeline-3') {
                         // 尝试构建镜像，无论成功与否都启动容器
                         withCredentials([
+                            // Прямой ввод используется только для инициализации базы данных
                             string(credentialsId: 'db-name', variable: 'DB_NAME'),
                             string(credentialsId: 'db-user', variable: 'DB_USER'),
-                            string(credentialsId: 'db-password', variable: 'DB_PASSWORD')
+                            string(credentialsId: 'db-password', variable: 'DB_PASSWORD'),
+                            string(credentialsId: 'ansible-vault-password', variable: 'DECRYPT_PASSWORD')
                         ]) {
                             try {
                                 sh 'docker-compose build'
